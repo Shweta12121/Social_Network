@@ -6,9 +6,19 @@ class SignupSerializer(serializers.ModelSerializer):
     profile_pic = serializers.ImageField(required=False)
     class Meta:
         model = User
-        fields = ['full_name', 'email', 'password', 'dob', 'profile_pic']
+        fields = ['full_name', 'email', 'password', 'college', 'dob', 'profile_pic']
         extra_kwargs = {'password': {'write_only': True}}
 
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email already registered")
+        return value
+
+    def validate_college(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("College name is required")
+        return value
+    
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
@@ -34,4 +44,4 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['full_name', 'email', 'dob', 'profile_pic']
+        fields = ['full_name', 'email', 'college', 'dob', 'profile_pic']

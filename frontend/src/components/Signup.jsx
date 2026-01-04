@@ -3,6 +3,11 @@ import api from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import defaultAvatar from "../assets/default_user.png";
 
+const isValidEmail = (email) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+
 function Signup() {
   const navigate = useNavigate();
   const [preview, setPreview] = useState(null);
@@ -14,6 +19,7 @@ function Signup() {
     password: "",
     confirm_password: "",
     dob: "",
+    college: "",
     profile_pic: null,
   });
 
@@ -31,10 +37,52 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+
+    if (
+      !form.full_name ||
+      !form.email ||
+      !form.password ||
+      !form.confirm_password ||
+      !form.dob ||
+      !form.college
+    ) {
+      setError("All fields except profile picture are required");
+      return;
+    }
+
+    // Email validation
+    if (!isValidEmail(form.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    // Password length validation
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    // Password match validation
     if (form.password !== form.confirm_password) {
       setError("Passwords do not match");
       return;
     }
+
+    // Profile picture validation (only if uploaded)
+    if (form.profile_pic) {
+      const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+      if (!allowedTypes.includes(form.profile_pic.type)) {
+        setError("Only JPG and PNG images are allowed");
+        return;
+      }
+
+      if (form.profile_pic.size > 2 * 1024 * 1024) {
+        setError("Profile picture must be under 2MB");
+        return;
+      }
+    }
+    
+
 
     setError("");
 
@@ -85,6 +133,9 @@ function Signup() {
 
           <label>Email Address</label>
           <input name="email" onChange={handleChange} />
+
+          <label>College Name</label>
+          <input name="college" onChange={handleChange}/>
 
           <div className="password-row">
             <div>

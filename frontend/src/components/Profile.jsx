@@ -76,6 +76,8 @@ function Profile() {
 
           <h3 className="profile-name">{profile.full_name}</h3>
           <p className="profile-email">{profile.email}</p>
+          <p className="profile-college"> College: {profile.college}</p>
+
 
           <p className="profile-dob">
             DOB:&nbsp;

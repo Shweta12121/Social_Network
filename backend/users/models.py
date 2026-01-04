@@ -36,6 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=100)
     dob = models.DateField()
+    college = models.CharField(max_length=150)
     profile_pic = models.ImageField(upload_to='profiles/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -43,4 +44,4 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['full_name', 'dob']
+    REQUIRED_FIELDS = ['full_name', 'dob', 'college']

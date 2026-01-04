@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+
 function Post({ profilePic }) {
   const [posts, setPosts] = useState([]);
   const [image, setImage] = useState(null);
@@ -113,7 +123,12 @@ function Post({ profilePic }) {
                   className="post-user-pic"
                   alt="user"
                 />
-                <span className="post-author">You</span>
+                <div>
+                  <div className="post-author">You</div>
+                  <div style={{ fontSize: "12px", color: "#777" }}>
+                    Posted on - {formatDate(post.created_at)}
+                  </div>
+                </div>
               </div>
 
               <button
@@ -139,14 +154,23 @@ function Post({ profilePic }) {
             )}
 
             <div className="post-footer">
-              <button onClick={() => api.post(`posts/${post.id}/like/`).then(loadPosts)}>
-                👍 {post.likes}
-              </button>
+  <button
+    onClick={() =>
+      api.post(`posts/${post.id}/like/`).then(loadPosts)
+    }
+  >
+    👍 {post.likes}
+  </button>
 
-              <button onClick={() => api.post(`posts/${post.id}/dislike/`).then(loadPosts)}>
-                👎 {post.dislikes}
-              </button>
-            </div>
+  <button
+    onClick={() =>
+      api.post(`posts/${post.id}/dislike/`).then(loadPosts)
+    }
+  >
+    👎 {post.dislikes}
+  </button>
+</div>
+
           </div>
         ))}
       </div>

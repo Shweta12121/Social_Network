@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .models import Post
+from .models import Post, PostReaction
 from .serializers import PostSerializer
 
 
@@ -35,20 +35,32 @@ class PostDeleteView(APIView):
         except Post.DoesNotExist:
             return Response({"error": "Post not found"}, status=404)
 
-class PostLikeView(APIView):
+
+
+
+class ToggleReactionView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, post_id):
+    def post(self, request, post_id, reaction_type):
         post = Post.objects.get(id=post_id)
-        post.likes += 1
-        post.save()
-        return Response({"likes": post.likes})
+        user = request.user
 
-class PostDislikeView(APIView):
-    permission_classes = [IsAuthenticated]
+        existing = PostReaction.objects.filter(user=user, post=post).first()
 
-    def post(self, request, post_id):
-        post = Post.objects.get(id=post_id)
-        post.dislikes += 1
-        post.save()
-        return Response({"dislikes": post.dislikes})
+        if existing:
+            if existing.reaction == reaction_type:
+                # toggle OFF
+                existing.delete()
+                return Response({"status": "removed"})
+            else:
+                # switch reaction
+                existing.reaction = reaction_type
+                existing.save()
+                return Response({"status": "updated"})
+        else:
+            PostReaction.objects.create(
+                user=user,
+                post=post,
+                reaction=reaction_type
+            )
+            return Response({"status": "added"})
