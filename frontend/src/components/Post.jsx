@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
+import likeIcon from "../assets/icons/like.png";
+import dislikeIcon from "../assets/icons/dislike.png";
 
 function formatDate(dateString) {
   const date = new Date(dateString);
@@ -10,12 +12,15 @@ function formatDate(dateString) {
   });
 }
 
-
 function Post({ profilePic }) {
   const [posts, setPosts] = useState([]);
   const [image, setImage] = useState(null);
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+
+  // comments (NEW but isolated)
+  const [openComments, setOpenComments] = useState({});
+  const [newComments, setNewComments] = useState({});
 
   const loadPosts = () => {
     api.get("posts/").then((res) => setPosts(res.data));
@@ -24,6 +29,11 @@ function Post({ profilePic }) {
   useEffect(() => {
     loadPosts();
   }, []);
+
+  const toggleReaction = async (postId, type) => {
+    await api.post(`posts/${postId}/${type}/`);
+    loadPosts();
+  };
 
   const addPost = async () => {
     setError("");
@@ -34,36 +44,56 @@ function Post({ profilePic }) {
     }
 
     const data = new FormData();
-
     if (image) data.append("image", image);
     if (description) data.append("description", description);
 
-    try {
-      await api.post("posts/", data);
-      setDescription("");
-      setImage(null);
-      loadPosts();
-    } catch (err) {
-      setError("Failed to post. Please try again.");
-    }
+    await api.post("posts/", data);
+    setDescription("");
+    setImage(null);
+    loadPosts();
+  };
+
+  // COMMENTS
+  const toggleComments = (postId) => {
+    setOpenComments((prev) => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
+  };
+
+  const addComment = async (postId) => {
+    const text = newComments[postId] ?? "";
+    if (!text || !text.trim()) return;
+
+    await api.post(
+      `posts/${postId}/comments/`,
+      JSON.stringify({ text: text.trim() }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    setNewComments((prev) => ({ ...prev, [postId]: "" }));
+    loadPosts();
   };
 
   return (
     <>
+      {/* ADD POST */}
       <div className="add-post-card">
         <div className="add-post-header">
           <h3>Add Post</h3>
         </div>
 
+        {/* PREVIEW (RESTORED) */}
         <div className="add-post-preview">
           {description && <p>{description}</p>}
 
           {image && (
             <div style={{ position: "relative", display: "inline-block" }}>
-              <img
-                src={URL.createObjectURL(image)}
-                alt="preview"
-              />
+              <img src={URL.createObjectURL(image)} alt="preview" />
               <button
                 onClick={() => setImage(null)}
                 style={{
@@ -112,65 +142,96 @@ function Post({ profilePic }) {
       <div className="posts-feed">
         {posts.map((post) => (
           <div className="post-card" key={post.id}>
+            {/* HEADER */}
             <div className="post-header">
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ display: "flex", gap: "10px" }}>
                 <img
-                  src={
-                    profilePic
-                      ? `http://127.0.0.1:8000${profilePic}`
-                      : "/default_user.png"
-                  }
+                  src={post.author_profile_pic || "/default_user.png"}
                   className="post-user-pic"
                   alt="user"
                 />
                 <div>
-                  <div className="post-author">You</div>
+                  <div className="post-author">{post.author_name}</div>
                   <div style={{ fontSize: "12px", color: "#777" }}>
                     Posted on - {formatDate(post.created_at)}
                   </div>
                 </div>
               </div>
 
-              <button
-                className="delete-btn"
-                onClick={() =>
-                  api.delete(`posts/${post.id}/delete/`).then(loadPosts)
-                }
-              >
-                ✖
-              </button>
+              {post.is_owner && (
+                <button
+                  className="delete-btn"
+                  onClick={() =>
+                    api.delete(`posts/${post.id}/delete/`).then(loadPosts)
+                  }
+                >
+                  ✖
+                </button>
+              )}
             </div>
 
+            {/* CONTENT */}
             {post.description && (
               <p className="post-text">{post.description}</p>
             )}
 
-            {post.image && (
-              <img
-                src={`http://127.0.0.1:8000${post.image}`}
-                alt="post"
-                className="post-image"
-              />
+            {post.image_url && (
+              <img src={post.image_url} alt="post" className="post-image" />
             )}
 
+            {/* FOOTER */}
             <div className="post-footer">
-  <button
-    onClick={() =>
-      api.post(`posts/${post.id}/like/`).then(loadPosts)
-    }
-  >
-    👍 {post.likes}
-  </button>
+              <button onClick={() => toggleReaction(post.id, "like")} className="icon-btn">
+                <img src={likeIcon} alt="like" />
+                <span>{post.likes}</span>
+              </button>
 
-  <button
-    onClick={() =>
-      api.post(`posts/${post.id}/dislike/`).then(loadPosts)
-    }
-  >
-    👎 {post.dislikes}
-  </button>
-</div>
+              <button onClick={() => toggleReaction(post.id, "dislike")} className="icon-btn">
+                <img src={dislikeIcon} alt="dislike" />
+                <span>{post.dislikes}</span>
+              </button>
 
+              <button onClick={() => toggleComments(post.id)}>
+                💬 Comment ({post.comments_count})
+              </button>
+            </div>
+
+            {/* COMMENTS */}
+            {openComments[post.id] && (
+              <div className="comments-section">
+                {post.comments.map((comment) => (
+                  <div key={comment.id} className="comment">
+                    <strong>{comment.user_name}</strong>: {comment.text}
+
+                    {comment.is_owner && (
+                      <button
+                        onClick={() =>
+                          api
+                            .delete(`comments/${comment.id}/delete/`)
+                            .then(loadPosts)
+                        }
+                      >
+                        ✖
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+                <div className="add-comment">
+                  <input
+                    placeholder="Write a comment..."
+                    value={newComments[post.id] || ""}
+                    onChange={(e) =>
+                      setNewComments((prev) => ({
+                        ...prev,
+                        [post.id]: e.target.value,
+                      }))
+                    }
+                  />
+                  <button onClick={() => addComment(post.id)}>Post</button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

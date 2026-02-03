@@ -2,10 +2,7 @@ from django.db import models
 
 # Create your models here.
 
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-
-from django.contrib.auth.models import BaseUserManager
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -37,7 +34,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     full_name = models.CharField(max_length=100)
     dob = models.DateField()
     college = models.CharField(max_length=150)
-    profile_pic = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    profile_pic = models.ImageField(
+    upload_to="profiles/",
+    blank=True,
+    null=True,
+    default="defaults/default_user.png"
+    )
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 

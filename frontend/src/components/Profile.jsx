@@ -3,6 +3,7 @@ import api from "../api/axios";
 import Post from "./Post";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
+import editIcon from "../assets/icons/edit.png";
 
 function Profile() {
   const [profile, setProfile] = useState(null);
@@ -15,12 +16,15 @@ function Profile() {
     api.get("profile/").then((res) => {
       setProfile(res.data);
       setDob(res.data.dob);
-    });
+    })
+      .catch(() => {
+        navigate("/login");
+      });
   }, []);
 
   const logout = () => {
     localStorage.removeItem("access");
-    navigate("/login");
+    window.location.href = "/login";
   };
 
   const handleProfilePicChange = async (e) => {
@@ -35,10 +39,40 @@ function Profile() {
   };
 
   const saveDob = async () => {
+    const selectedDate = new Date(dob);
+    const today = new Date();
+
+    if (selectedDate >= today) {
+      alert("Date of birth must be in the past");
+      return;
+    }
+
     const res = await api.patch("profile/", { dob });
     setProfile(res.data);
     setEditingDob(false);
   };
+
+  const handleShareProfile = async () => {
+    const profileUrl = `${window.location.origin}/user/${profile.id}`;
+
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${profile.full_name}'s Profile`,
+          text: `Check out ${profile.full_name}'s profile`,
+          url: profileUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(profileUrl);
+        alert("Profile link copied to clipboard!");
+      }
+    } catch (error) {
+      console.error("Share failed:", error);
+      alert("Unable to share profile");
+    }
+  };
+
 
   if (!profile) return <p>Loading...</p>;
 
@@ -62,7 +96,7 @@ function Profile() {
               className="edit-icon"
               onClick={() => fileInputRef.current.click()}
             >
-              ✎
+              <img src={editIcon} alt="edit" />
             </span>
 
             <input
@@ -97,13 +131,16 @@ function Profile() {
                   className="edit-icon-inline"
                   onClick={() => setEditingDob(true)}
                 >
-                  ✎
+                  <img src={editIcon} alt="edit" />
                 </span>
               </>
             )}
           </p>
 
-          <button className="share-btn">Share Profile</button>
+          <button className="share-btn" onClick={handleShareProfile}>
+            Share Profile
+          </button>
+
           <button className="logout-btn" onClick={logout}>
             Logout
           </button>

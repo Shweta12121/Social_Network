@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import api, { setAuthToken } from "../api/axios";
+import api from "../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 
 function Login() {
@@ -13,7 +13,7 @@ function Login() {
     try {
       const res = await api.post("login/", { email, password });
       localStorage.setItem("access", res.data.access);
-      setAuthToken(res.data.access);
+      
       navigate("/profile");
     } catch {
       alert("Invalid login");

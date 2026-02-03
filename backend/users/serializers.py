@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from datetime import date
 from .models import User
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -18,6 +19,19 @@ class SignupSerializer(serializers.ModelSerializer):
         if not value.strip():
             raise serializers.ValidationError("College name is required")
         return value
+    def validate_profile_pic(self, image):
+        if image.size > 2 * 1024 * 1024:
+            raise serializers.ValidationError("Image too large")
+        return image
+    def validate_dob(self, value):
+        if value >= date.today():
+            raise serializers.ValidationError("DOB must be in the past")
+        return value
+    def validate_full_name(self, value):
+        if len(value.strip()) < 3:
+            raise serializers.ValidationError("Full name must be at least 3 characters")
+        return value
+
     
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
@@ -44,4 +58,16 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['full_name', 'email', 'college', 'dob', 'profile_pic']
+        fields = ['id','full_name', 'email', 'college', 'dob', 'profile_pic']
+    
+    
+    def validate_dob(self, value):
+        if value >= date.today():
+            raise serializers.ValidationError("DOB must be in the past")
+        return value
+
+
+class PublicProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'full_name', 'college', 'dob', 'profile_pic']

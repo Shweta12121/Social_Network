@@ -6,7 +6,12 @@ import defaultAvatar from "../assets/default_user.png";
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
-
+const isValidFullName = (name) => {
+  return /^[a-zA-Z ]{3,}$/.test(name.trim());
+};
+const isValidCollege = (college) => {
+  return college.trim().length >= 3;
+};
 
 function Signup() {
   const navigate = useNavigate();
@@ -38,37 +43,42 @@ function Signup() {
     e.preventDefault();
 
 
-    if (
-      !form.full_name ||
-      !form.email ||
-      !form.password ||
-      !form.confirm_password ||
-      !form.dob ||
-      !form.college
-    ) {
-      setError("All fields except profile picture are required");
+
+    if (new Date(form.dob) >= new Date()) {
+      setError("Date of birth must be in the past");
       return;
     }
 
+
+     if (!isValidCollege(form.college)) {
+      setError("Please enter college name");
+      return;
+    }
+    
+
+     if (!isValidFullName(form.full_name)) {
+      setError("Please enter full name");
+      return;
+    }
     // Email validation
     if (!isValidEmail(form.email)) {
       setError("Please enter a valid email address");
       return;
     }
 
-    // Password length validation
+    // Password validation
     if (form.password.length < 6) {
       setError("Password must be at least 6 characters long");
       return;
     }
 
-    // Password match validation
+    // Password match
     if (form.password !== form.confirm_password) {
       setError("Passwords do not match");
       return;
     }
 
-    // Profile picture validation (only if uploaded)
+    // Profile picture validation 
     if (form.profile_pic) {
       const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
       if (!allowedTypes.includes(form.profile_pic.type)) {
@@ -80,6 +90,17 @@ function Signup() {
         setError("Profile picture must be under 2MB");
         return;
       }
+    }
+    if (
+      !form.full_name ||
+      !form.email ||
+      !form.password ||
+      !form.confirm_password ||
+      !form.dob ||
+      !form.college
+    ) {
+      setError("All fields except profile picture are required");
+      return;
     }
     
 

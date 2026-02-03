@@ -7,8 +7,8 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
-
-from .serializers import SignupSerializer, LoginSerializer,ProfileSerializer
+from .models import User
+from .serializers import SignupSerializer, LoginSerializer,ProfileSerializer, PublicProfileSerializer
 
 
 class SignupView(APIView):
@@ -62,3 +62,16 @@ class ProfileView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+
+class PublicProfileView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id, is_active=True)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found"}, status=404)
+
+        serializer = PublicProfileSerializer(user)
+        return Response(serializer.data)

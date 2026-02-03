@@ -25,6 +25,32 @@ body {
   align-items: flex-start; 
 }
 
+/* comment CARD */
+.add-comment-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+.comment-text-area{
+  width: 100%;
+  min-height: 80px;
+  margin-top: 10px;
+  padding: 10px;
+}
+.comment-actions button {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 /* PROFILE CARD */
 .profile-card {
   background: #fff;
@@ -74,6 +100,17 @@ body {
   color: #666;
   margin: 5px 0;
 }
+.edit-icon-inline {
+  opacity: 0;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: opacity 0.2s ease;
+}
+
+.profile-dob:hover .edit-icon-inline {
+  opacity: 1;
+}
+
 
 .edit-icon-inline {
   cursor: pointer;
@@ -346,4 +383,126 @@ body {
   color: red;
   font-size: 13px;
   margin-top: 5px;
+}
+
+
+/* ===== SIMPLE COMMENTS UI ===== */
+
+.comments-section {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e5e5;
+}
+
+/* Single comment */
+.comment {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  padding: 4px 0;
+  color: #222;
+}
+
+/* Username */
+.comment strong {
+  font-weight: 500;
+  margin-right: 5px;
+}
+
+/* Delete button */
+.comment button {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.comment button:hover {
+  color: #d32f2f;
+}
+
+/* Add comment input */
+.add-comment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.add-comment input {
+  flex: 1;
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  padding: 8px 4px;
+  font-size: 14px;
+  outline: none;
+}
+
+/* Post button */
+.add-comment button {
+  background: none;
+  border: none;
+  color: #1976d2;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.add-comment button:hover {
+  text-decoration: underline;
+}
+
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.icon-btn img {
+  width: 18px;
+  height: 18px;
+}
+
+.edit-icon {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: #1976d2;
+  padding: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.edit-icon img {
+  width: 14px;
+  height: 14px;
+  filter: invert(1);
+}
+.edit-icon-inline img {
+  width: 12px;
+  height: 12px;
+  opacity: 0.7;
+}
+
+.profile-dob:hover .edit-icon-inline img {
+  opacity: 1;
+}
+
+.edit-icon {
+  background: none;
+  padding: 0;
+}
+
+.edit-icon img {
+  filter: none;
+  width: 12px;
+  height: 12px;
+  opacity: 0.7;
 }

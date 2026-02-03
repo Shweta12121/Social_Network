@@ -4,8 +4,21 @@ import Signup from "./components/Signup";
 import Login from "./components/Login";
 import Profile from "./components/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { setAuthToken } from "./api/axios";
+import PublicProfile from "./components/PublicProfile";
 
 function App() {
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    // Just signal that auth check is done
+    setAuthReady(true);
+  }, []);
+
+  if (!authReady) {
+    return <p>Loading...</p>;
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -19,6 +32,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/user/:id" element={<PublicProfile />} />
       </Routes>
     </BrowserRouter>
   );
